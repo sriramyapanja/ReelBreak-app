@@ -1,6 +1,6 @@
 # ReelBreak 🌵
 
-A mindfulness-driven behavioral game that transforms subconscious social media scrolling into moments of awareness, reflection, and gentle self-interruption—without restriction or shame.
+A mindfulness-driven behavioral game that transforms subconscious social media scrolling into moments of awareness, reflection, and gentle self-interruption.
 
 **You're not competing to scroll less. You're playing to notice more.**
 
