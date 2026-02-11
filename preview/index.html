@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReelBreak — Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F5F0E8;
+      --surface: #EDE8E0;
+      --text: #4A453E;
+      --textMuted: #7A756E;
+      --accent: #C47B5B;
+      --border: #E0DBD2;
+      --success: #6B8F71;
+      --white: #FFFFFF;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* ——— Cactus runner game (dino-style) ——— */
+    .game-section {
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+      padding: 12px 0 16px;
+      margin-bottom: 20px;
+    }
+    .game-label {
+      font-size: 11px;
+      color: var(--textMuted);
+      text-align: center;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .game-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 16px;
+    }
+    #gameCanvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      cursor: pointer;
+      max-width: 100%;
+      width: 360px;
+      height: 200px;
+    }
+    .game-hint {
+      font-size: 12px;
+      color: var(--textMuted);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ——— Offline message (Chrome-style, below game) ——— */
+    .offline-msg {
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+      padding: 20px 24px 24px;
+      margin-bottom: 0;
+    }
+    .offline-msg h2 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .offline-msg .try-label { font-size: 15px; color: var(--text); margin-bottom: 8px; }
+    .offline-msg ul {
+      list-style: none;
+      padding-left: 0;
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .offline-msg li { padding-left: 20px; position: relative; margin-bottom: 4px; }
+    .offline-msg li::before { content: '•'; position: absolute; left: 0; color: var(--textMuted); }
+
+    .screen { display: none; min-height: 80vh; padding: 0 24px 24px; }
+    .screen.active { display: block; }
+    #home.screen.active { padding-top: 0; }
+
+    .home-greeting { text-align: center; padding: 24px 0 32px; }
+    .cactus-gif-wrap {
+      display: inline-block;
+      animation: giffy-bounce 2s ease-in-out infinite;
+    }
+    @keyframes giffy-bounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-6px) scale(1.02); }
+    }
+    .home-message { font-size: 18px; color: var(--textMuted); margin: 16px 0 24px; line-height: 1.45; max-width: 320px; margin-left: auto; margin-right: auto; }
+    h1 { font-size: 28px; font-weight: 600; margin-bottom: 4px; padding: 0 24px; }
+    .tagline { font-size: 16px; color: var(--textMuted); margin-bottom: 24px; padding: 0 24px; }
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .cardLabel { font-size: 14px; color: var(--textMuted); margin-bottom: 4px; }
+    .score { font-size: 42px; font-weight: 300; }
+    .row { display: flex; gap: 12px; margin-bottom: 48px; }
+    .smallCard {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .smallLabel { font-size: 12px; color: var(--textMuted); margin-bottom: 2px; }
+    .smallValue { font-size: 18px; }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 18px;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: var(--white); }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .reel-count { font-size: 72px; font-weight: 200; text-align: center; margin: 24px 0 32px; }
+    .reel-btns { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; }
+    .reel-btns button { padding: 16px 32px; font-size: 24px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text); cursor: pointer; font-family: inherit; }
+    .reel-btns button:hover { background: var(--border); }
+    .undo { text-align: center; margin-bottom: 48px; }
+    .undo a { font-size: 16px; color: var(--textMuted); cursor: pointer; }
+    .label-center { font-size: 18px; color: var(--textMuted); text-align: center; margin-bottom: 24px; }
+    .rainbow-wrap { margin: 24px 0 20px; padding: 0 8px; position: relative; height: 230px; }
+    .rainbow-arc {
+      width: 100%;
+      height: 150px;
+      border-radius: 0 0 9999px 9999px;
+      background: linear-gradient(90deg, #e74c3c 0%, #f39c12 16%, #f1c40f 33%, #2ecc71 50%, #3498db 66%, #9b59b6 83%, #e91e8c 100%);
+      position: relative;
+      cursor: pointer;
+      touch-action: none;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    .rainbow-sparkle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.95);
+      pointer-events: none;
+      animation: sparkle 1.2s ease-in-out infinite;
+    }
+    .rainbow-sparkle:nth-child(1) { left: 8%; top: 24px; animation-delay: 0s; }
+    .rainbow-sparkle:nth-child(2) { left: 22%; top: 18px; animation-delay: 0.2s; width: 6px; height: 6px; }
+    .rainbow-sparkle:nth-child(3) { left: 38%; top: 28px; animation-delay: 0.4s; }
+    .rainbow-sparkle:nth-child(4) { left: 52%; top: 14px; animation-delay: 0.1s; width: 7px; height: 7px; }
+    .rainbow-sparkle:nth-child(5) { left: 68%; top: 24px; animation-delay: 0.3s; }
+    .rainbow-sparkle:nth-child(6) { left: 82%; top: 20px; animation-delay: 0.5s; width: 6px; height: 6px; }
+    .rainbow-sparkle:nth-child(7) { left: 94%; top: 28px; animation-delay: 0.15s; }
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    .rainbow-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--text);
+      position: absolute;
+      transform: translateX(-50%);
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 2;
+    }
+    .mood-value-pop {
+      display: inline-block;
+      animation: moodPop 0.35s ease-out;
+    }
+    @keyframes moodPop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.35); }
+      70% { transform: scale(0.98); }
+      100% { transform: scale(1); }
+    }
+    .arc-emotion {
+      position: absolute;
+      width: 56px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--textMuted);
+      transform: translateX(-28px);
+      transition: transform 0.2s ease, color 0.2s ease;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .arc-emotion.selected {
+      color: var(--text);
+      font-weight: 600;
+      transform: translateX(-28px) scale(1.3);
+    }
+    .mood-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 48px; }
+    .mood-option {
+      padding: 18px 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 18px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .mood-option:hover { border-color: var(--accent); background: #F5EDE8; }
+    .countdown-screen { text-align: center; padding: 60px 24px; }
+    .countdown-num { font-size: 72px; font-weight: 200; color: var(--accent); margin: 24px 0; }
+    .countdown-label { font-size: 18px; color: var(--textMuted); }
+    .countdown-sublabel { font-size: 14px; color: var(--textMuted); margin-top: 8px; }
+    .celebration-wrap { text-align: center; padding: 40px 24px; }
+    .celebration-cactus { margin: 16px 0; }
+    .celebration-text { font-size: 24px; font-weight: 600; color: var(--text); margin: 16px 0 4px; }
+    .celebration-proud { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+    .celebration-sub { font-size: 14px; color: var(--textMuted); }
+    .question { font-size: 22px; text-align: center; margin: 100px 0 48px; }
+    .choice-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .choice-row .btn { max-width: 140px; }
+    .challenge-list { display: flex; flex-direction: column; gap: 12px; }
+    .challenge-option {
+      padding: 18px 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .challenge-option:hover { border-color: var(--accent); }
+
+    /* ——— Pixel cactus (reward screen) ——— */
+    .cactus-wrap { text-align: center; padding: 32px 0 24px; }
+    .cactus-wrap .cactus-gif-wrap { animation: giffy-bounce 2s ease-in-out infinite; }
+    .pixel-cactus {
+      display: inline-block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    .affirmation { font-size: 18px; color: var(--text); font-style: italic; margin-top: 20px; max-width: 280px; margin-left: auto; margin-right: auto; }
+    .points-wrap { text-align: center; margin: 32px 0 48px; }
+    .points-label { font-size: 14px; color: var(--textMuted); margin-bottom: 4px; }
+    .points-num { font-size: 36px; font-weight: 300; }
+  </style>
+</head>
+<body>
+  <!-- Screen 1: Home — game, offline message, then Mami + log reels -->
+  <div id="home" class="screen active">
+    <div class="game-section">
+      <div class="game-wrap">
+        <canvas id="gameCanvas" width="360" height="200" tabindex="0"></canvas>
+      </div>
+      <p class="game-hint">Tap Space to jump, avoid the dinos!</p>
+    </div>
+    <div class="offline-msg">
+      <h2>Awesome you're offline...</h2>
+      <p class="try-label">Try:</p>
+      <ul>
+        <li>Turning on your airplane mode</li>
+        <li>Turning off mobile data or Wi‑Fi</li>
+        <li>Checking in on the people in the house</li>
+      </ul>
+    </div>
+    <div class="home-greeting">
+      <div class="cactus-gif-wrap">
+        <canvas id="homeCactus" class="pixel-cactus giffy" width="68" height="56"></canvas>
+      </div>
+      <p class="home-message">Hello! I'm Mami, your little mindfulness plant buddy. Are you ready to log?</p>
+      <button class="btn btn-primary" onclick="show('reel')">Log reels</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: Reel count -->
+  <div id="reel" class="screen">
+    <p class="label-center">How many reels this session?</p>
+    <div class="reel-count" id="reelNum">0</div>
+    <div class="reel-btns">
+      <button onmousedown="startAdjustReel(-1)" onmouseup="stopAdjustReel()" onmouseleave="stopAdjustReel()" ontouchstart="startAdjustReel(-1)" ontouchend="stopAdjustReel()">−1</button>
+      <button onmousedown="startAdjustReel(1)" onmouseup="stopAdjustReel()" onmouseleave="stopAdjustReel()" ontouchstart="startAdjustReel(1)" ontouchend="stopAdjustReel()">+1</button>
+    </div>
+    <div class="undo"><a onclick="adjustReel(-1)">Undo</a></div>
+    <button class="btn btn-primary" onclick="show('mood')">Log</button>
+  </div>
+
+  <!-- Screen 3: Mood — 2D rainbow with sparkles -->
+  <div id="mood" class="screen">
+    <p class="label-center">How are you feeling?</p>
+    <div class="rainbow-wrap" id="rainbowWrap">
+      <div class="rainbow-arc" id="rainbowTrack">
+        <span class="rainbow-sparkle"></span>
+        <span class="rainbow-sparkle"></span>
+        <span class="rainbow-sparkle"></span>
+        <span class="rainbow-sparkle"></span>
+        <span class="rainbow-sparkle"></span>
+        <span class="rainbow-sparkle"></span>
+        <span class="rainbow-sparkle"></span>
+        <div class="rainbow-thumb" id="rainbowThumb"></div>
+      </div>
+      <span class="arc-emotion" data-i="0">Sad</span>
+      <span class="arc-emotion" data-i="1">Anxious</span>
+      <span class="arc-emotion" data-i="2">Bored</span>
+      <span class="arc-emotion" data-i="3">Okay</span>
+      <span class="arc-emotion" data-i="4">Calm</span>
+      <span class="arc-emotion" data-i="5">Happy</span>
+      <span class="arc-emotion" data-i="6">Excited</span>
+    </div>
+    <button class="btn btn-primary" onclick="confirmMood()">Continue</button>
+  </div>
+
+  <!-- Screen 4: Intervention -->
+  <div id="intervention" class="screen">
+    <p class="question">Do you want a small pause?</p>
+    <div class="choice-row">
+      <button class="btn btn-primary" onclick="show('challenges')">Yes</button>
+      <button class="btn btn-secondary" onclick="show('reward')">No</button>
+    </div>
+  </div>
+
+  <!-- Screen 5: Challenges -->
+  <div id="challenges" class="screen">
+    <p class="label-center">Choose one</p>
+    <div class="challenge-list">
+      <div class="challenge-option" onclick="show('squats')">5 squats</div>
+      <div class="challenge-option" onclick="startBreathe30()">Breathe 30 seconds</div>
+      <div class="challenge-option" onclick="completeChallenge('text_friend')">Text a friend</div>
+      <div class="challenge-option" onclick="completeChallenge('one_line_reflection')">1-line reflection</div>
+      <div class="challenge-option" onclick="completeChallenge('stand_stretch')">Stand up & stretch</div>
+    </div>
+  </div>
+
+  <!-- Screen: 5 squats — Finish button then yay -->
+  <div id="squats" class="screen">
+    <div class="countdown-screen">
+      <p class="countdown-label">Do your 5 squats</p>
+      <p class="countdown-sublabel">Tap Finish when you're done</p>
+      <button class="btn btn-primary" style="marginTop: 32px" onclick="finishSquats()">Finish</button>
+    </div>
+  </div>
+
+  <!-- Screen: Breathe — inhale 8s, hold 4s, exhale 8s, 3 rounds -->
+  <div id="countdown" class="screen">
+    <div class="countdown-screen">
+      <p class="countdown-label" id="breatheIntro">Mami says: We will do 3 rounds - breathe in for 8 seconds, pause 4 seconds, and breathe out for 8 seconds. Are you ready to start?</p>
+      <button class="btn btn-primary" id="breatheReadyBtn" style="margin-top: 24px" onclick="beginBreatheRounds()">Ready</button>
+      <p class="countdown-num" id="countdownNum" style="display:none"></p>
+      <p class="countdown-label" id="breathePhase" style="display:none; font-size: 52px; color: var(--accent); margin-top: 8px;">Breathe in</p>
+      <p class="countdown-sublabel" id="breatheSublabel" style="display:none">for 8 seconds</p>
+      <p class="countdown-sublabel" id="breatheRound" style="display:none; margin-top: 12px;">Round 1 of 3</p>
+      <button class="btn btn-primary" id="breatheFinishBtn" style="margin-top: 28px; display: none" onclick="finishBreathe()">Finish</button>
+    </div>
+  </div>
+
+  <!-- Screen: Celebration (yay + proud + back to dashboard) -->
+  <div id="celebration" class="screen">
+    <div class="celebration-wrap">
+      <div class="celebration-cactus">
+        <canvas id="celebrationCactus" width="80" height="90"></canvas>
+      </div>
+      <p class="celebration-text">Yayy you finished!</p>
+            <button class="btn btn-primary" style="marginTop: 24px" onclick="show('home')">Back to dashboard</button>
+    </div>
+  </div>
+
+  <!-- Screen 6: Reward (pixel cactus) -->
+  <div id="reward" class="screen">
+    <div class="cactus-wrap">
+      <div class="cactus-gif-wrap">
+        <canvas id="rewardCactus" class="pixel-cactus" width="68" height="56"></canvas>
+      </div>
+      <p class="affirmation">You noticed.</p>
+    </div>
+    <button class="btn btn-primary" onclick="show('home')">Back to dashboard</button>
+  </div>
+
+  <script>
+    // ——— Static T-Rex: endless run with HI score. ———
+    const PX = 2;
+    const W = 360;
+    const H = 200;
+    const GROUND_Y = H - 18;
+    const GRAVITY = 0.65;
+    const JUMP = -11;
+    const RUN_SPEED = 6;
+    const DINO_W = 24;
+    const DINO_H = 28;
+    const CACTUS_W = 22;
+    const CACTUS_H = 30;
+    const TOTAL_JUMPS_TO_FINISH = 3;
+    const SPAWN_INTERVAL_MS = 3000;
+    const SKY = '#87CEEB';
+    const GROUND = '#C4B8A5';
+    const GROUND_LINE = '#8B7355';
+    const CLOUD = '#FFFFFF';
+    const SUN = '#F4D03F';
+
+    let canvas = document.getElementById('gameCanvas');
+    let ctx = canvas.getContext('2d');
+    let cactusX = 42;
+    let cactusY = GROUND_Y - CACTUS_H - 12;
+    let velY = 0;
+    let jumpCount = 0;
+    let jumpTotal = 0;
+    let dinoList = [];
+    let gameOver = false;
+    let goodJob = false;
+    let nextSpawnAt = 0;
+    let animId;
+    let gameStartTime = 0;
+    let gameStarted = false;
+    let score = 0;
+    let hiScore = 0;
+
+    function drawCactus(x, y) {
+      const top = '#C47B5B';
+      const body = '#6B8F71';
+      const dark = '#5A7A60';
+      const eye = '#2C2416';
+      const pot = '#B85C38';
+      const potDark = '#9A4A2E';
+      const px = PX;
+      let yy = Math.floor(y / px) * px;
+      let xx = Math.floor(x / px) * px;
+      ctx.fillStyle = top;
+      ctx.fillRect(xx + 4, yy, 14, 8);
+      ctx.fillRect(xx + 8, yy - 4, 6, 4);
+      ctx.fillStyle = body;
+      ctx.fillRect(xx + 2, yy + 8, 18, 22);
+      ctx.fillRect(xx, yy + 14, 6, 14);
+      ctx.fillRect(xx + 16, yy + 16, 6, 10);
+      ctx.fillStyle = dark;
+      ctx.fillRect(xx + 8, yy + 14, 6, 10);
+      ctx.fillStyle = eye;
+      ctx.fillRect(xx + 5, yy + 16, 4, 4);
+      ctx.fillRect(xx + 13, yy + 16, 4, 4);
+      ctx.fillStyle = pot;
+      ctx.fillRect(xx + 2, yy + 30, 20, 10);
+      ctx.fillRect(xx, yy + 38, 24, 6);
+      ctx.fillStyle = potDark;
+      ctx.fillRect(xx + 6, yy + 42, 12, 4);
+    }
+
+    function drawDino(x, y, frame, scale) {
+      scale = scale || 1;
+      const green = '#7D9B6E';
+      const dark = '#5A6B4A';
+      const px = PX;
+      let xx = Math.floor(x / px) * px;
+      let yy = Math.floor(y / px) * px;
+      ctx.save();
+      ctx.translate(xx, yy);
+      ctx.scale(scale, scale);
+      ctx.translate(-xx, -yy);
+      ctx.fillStyle = green;
+      ctx.fillRect(xx + 4, yy + 12, 14, 16);
+      ctx.fillRect(xx + 2, yy + 4, 10, 12);
+      ctx.fillRect(xx + 16, yy + 8, 6, 8);
+      ctx.fillStyle = dark;
+      ctx.fillRect(xx + 6, yy + 2, 8, 8);
+      ctx.fillRect(xx + 18, yy + 20, 4, 10);
+      if (frame) {
+        ctx.fillRect(xx, yy + 26, 8, 6);
+        ctx.fillRect(xx + 14, yy + 28, 8, 4);
+      } else {
+        ctx.fillRect(xx + 2, yy + 28, 8, 4);
+        ctx.fillRect(xx + 16, yy + 26, 6, 6);
+      }
+      ctx.fillStyle = '#FFF';
+      ctx.fillRect(xx + 8, yy + 4, 4, 4);
+      ctx.fillStyle = '#2C2416';
+      ctx.fillRect(xx + 9, yy + 5, 2, 2);
+      ctx.restore();
+    }
+
+    function spawnDino(t) {
+      const big = Math.random() > 0.5;
+      const scale = big ? 1.2 : 0.6;
+      const w = Math.round(DINO_W * scale);
+      const h = Math.round(DINO_H * scale);
+      dinoList.push({ x: W, y: GROUND_Y - h, w: w, h: h, scale: scale });
+      nextSpawnAt = t + SPAWN_INTERVAL_MS;
+    }
+
+    function hit(a, b) {
+      return a.x < b.x + b.w && a.x + CACTUS_W > b.x &&
+             a.y < b.y + b.h && a.y + CACTUS_H > b.y;
+    }
+
+    function drawScene() {
+      ctx.fillStyle = SKY;
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = CLOUD;
+      ctx.beginPath();
+      ctx.ellipse(70, 50, 28, 14, 0, 0, Math.PI * 2);
+      ctx.ellipse(220, 80, 36, 18, 0, 0, Math.PI * 2);
+      ctx.ellipse(320, 44, 24, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = SUN;
+      ctx.beginPath();
+      ctx.arc(W - 28, 50, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = GROUND;
+      ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+      ctx.fillStyle = GROUND_LINE;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = -2; i < W + 30; i += 12) {
+        if (i === -2) ctx.moveTo(i, GROUND_Y);
+        else ctx.lineTo(i, GROUND_Y);
+      }
+      ctx.stroke();
+    }
+
+    function gameLoop(t) {
+      drawScene();
+
+      if (goodJob) {
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#4A453E';
+        ctx.font = 'bold 20px "Inter", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Good job!', W/2, H/2 - 8);
+        ctx.font = '14px "Inter", sans-serif';
+        ctx.fillText('Tap or Space to start again', W/2, H/2 + 14);
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#4A453E';
+        ctx.font = 'bold 20px "Inter", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game over', W/2, H/2 - 8);
+        ctx.font = '14px "Inter", sans-serif';
+        ctx.fillText('Tap or Space to start again', W/2, H/2 + 14);
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      if (!gameStarted) {
+        ctx.fillStyle = '#4A453E';
+        ctx.font = '14px "Inter", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Tap Space to jump, avoid the dinos!', W/2, H/2 - 10);
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      if (t >= nextSpawnAt) spawnDino(t);
+
+      velY += GRAVITY;
+      cactusY += velY;
+      const groundCactus = GROUND_Y - CACTUS_H - 12;
+      if (cactusY >= groundCactus) {
+        cactusY = groundCactus;
+        velY = 0;
+        jumpCount = 0;
+      }
+      drawCactus(cactusX, cactusY);
+
+      for (let i = dinoList.length - 1; i >= 0; i--) {
+        const d = dinoList[i];
+        d.x -= RUN_SPEED;
+        drawDino(d.x, d.y, Math.floor(t / 120) % 2 === 0, d.scale);
+        if (hit({ x: cactusX, y: cactusY }, d)) gameOver = true;
+        if (d.x + d.w < 0) dinoList.splice(i, 1);
+      }
+
+      score = Math.floor((t - gameStartTime) / 100);
+      if (score > hiScore) hiScore = score;
+      ctx.fillStyle = '#5A5548';
+      ctx.font = '12px "Inter", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('HI ' + String(hiScore).padStart(5, '0') + '  ' + String(score).padStart(5, '0'), W - 10, 16);
+
+      animId = requestAnimationFrame(gameLoop);
+    }
+
+    function jump() {
+      if (gameOver || goodJob) {
+        gameOver = false;
+        goodJob = false;
+        dinoList = [];
+        cactusY = GROUND_Y - CACTUS_H - 12;
+        velY = 0;
+        jumpCount = 0;
+        jumpTotal = 0;
+        gameStartTime = performance.now();
+        gameStarted = true;
+        score = 0;
+        nextSpawnAt = gameStartTime + SPAWN_INTERVAL_MS;
+        return;
+      }
+      if (!gameStarted) {
+        gameStarted = true;
+        gameStartTime = performance.now();
+        score = 0;
+        nextSpawnAt = gameStartTime + SPAWN_INTERVAL_MS;
+        jumpTotal = 0;
+      }
+      if (jumpCount < 2) {
+        velY = JUMP;
+        jumpCount++;
+        jumpTotal++;
+        if (jumpTotal >= TOTAL_JUMPS_TO_FINISH) goodJob = true;
+      }
+    }
+
+    canvas.addEventListener('click', jump);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); });
+    document.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); jump(); } });
+    canvas.focus();
+
+    animId = requestAnimationFrame(gameLoop);
+
+    const MOOD_7 = ['Sad', 'Anxious', 'Bored', 'Okay', 'Calm', 'Happy', 'Excited'];
+    let moodIndex = 3;
+    function setupRainbow() {
+      const wrap = document.getElementById('rainbowWrap');
+      const track = document.getElementById('rainbowTrack');
+      const thumb = document.getElementById('rainbowThumb');
+      const emotions = Array.from(document.querySelectorAll('.arc-emotion'));
+      if (!track || !thumb || !wrap) return;
+
+      function lift(p) {
+        const t = (p - 0.5) * 2;
+        return 1 - (t * t);
+      }
+
+      function positionByIndex(i) {
+        const p = i / 6;
+        thumb.style.left = (p * 100) + '%';
+        thumb.style.top = (118 - 44 * lift(p)) + 'px';
+
+        emotions.forEach(function(el, idx) {
+          const pp = idx / 6;
+          el.style.left = (pp * 100) + '%';
+          el.style.top = (42 - 22 * lift(pp)) + 'px';
+          el.classList.toggle('selected', idx === i);
+        });
+      }
+
+      function setPos(px) {
+        const r = track.getBoundingClientRect();
+        const w = r.width;
+        const p = Math.max(0, Math.min(1, (px - r.left) / w));
+        moodIndex = Math.round(p * 6);
+        positionByIndex(moodIndex);
+      }
+
+      function move(e) { setPos(e.touches ? e.touches[0].clientX : e.clientX); }
+      track.addEventListener('mousedown', function(e) { setPos(e.clientX); document.addEventListener('mousemove', move); });
+      document.addEventListener('mouseup', function() { document.removeEventListener('mousemove', move); });
+      track.addEventListener('touchstart', function(e) { e.preventDefault(); setPos(e.touches[0].clientX); });
+      track.addEventListener('touchmove', function(e) { e.preventDefault(); setPos(e.touches[0].clientX); }, { passive: false });
+      positionByIndex(moodIndex);
+    }
+    function confirmMood() {
+      show('intervention');
+    }
+    let breatheTimer = 0;
+    const BREATHE_PHASES = [
+      { label: 'Breathe in', detail: 'for 8 seconds', sec: 8 },
+      { label: 'Hold', detail: 'for 4 seconds', sec: 4 },
+      { label: 'Breathe out', detail: 'for 8 seconds', sec: 8 }
+    ];
+    const BREATHE_ROUNDS = 3;
+    function startBreathe30() {
+      show('countdown');
+      const introEl = document.getElementById('breatheIntro');
+      const readyBtn = document.getElementById('breatheReadyBtn');
+      const phaseEl = document.getElementById('breathePhase');
+      const numEl = document.getElementById('countdownNum');
+      const subEl = document.getElementById('breatheSublabel');
+      const roundEl = document.getElementById('breatheRound');
+      const finishBtn = document.getElementById('breatheFinishBtn');
+      if (breatheTimer) clearInterval(breatheTimer);
+      breatheTimer = 0;
+      if (introEl) introEl.style.display = 'block';
+      if (readyBtn) readyBtn.style.display = 'inline-block';
+      if (phaseEl) phaseEl.style.display = 'none';
+      if (numEl) numEl.style.display = 'none';
+      if (subEl) subEl.style.display = 'none';
+      if (roundEl) roundEl.style.display = 'none';
+      if (finishBtn) finishBtn.style.display = 'none';
+    }
+    function beginBreatheRounds() {
+      let round = 0;
+      let phase = 0;
+      let sec = BREATHE_PHASES[0].sec;
+      const introEl = document.getElementById('breatheIntro');
+      const readyBtn = document.getElementById('breatheReadyBtn');
+      const phaseEl = document.getElementById('breathePhase');
+      const numEl = document.getElementById('countdownNum');
+      const subEl = document.getElementById('breatheSublabel');
+      const roundEl = document.getElementById('breatheRound');
+      const finishBtn = document.getElementById('breatheFinishBtn');
+      if (introEl) introEl.style.display = 'none';
+      if (readyBtn) readyBtn.style.display = 'none';
+      if (phaseEl) {
+        phaseEl.style.display = 'block';
+        phaseEl.textContent = BREATHE_PHASES[0].label;
+      }
+      if (numEl) numEl.style.display = 'none';
+      if (subEl) {
+        subEl.style.display = 'block';
+        subEl.textContent = BREATHE_PHASES[0].detail;
+      }
+      if (roundEl) {
+        roundEl.style.display = 'block';
+        roundEl.textContent = 'Round 1 of ' + BREATHE_ROUNDS;
+      }
+      if (finishBtn) finishBtn.style.display = 'none';
+      if (breatheTimer) clearInterval(breatheTimer);
+      breatheTimer = setInterval(function() {
+        sec--;
+        if (sec <= 0) {
+          phase++;
+          if (phase >= BREATHE_PHASES.length) {
+            phase = 0;
+            round++;
+            if (round >= BREATHE_ROUNDS) {
+              clearInterval(breatheTimer);
+              breatheTimer = 0;
+              if (phaseEl) phaseEl.textContent = 'Great job';
+              if (numEl) numEl.textContent = '';
+              if (subEl) subEl.textContent = 'Tap Finish when you are ready';
+              if (roundEl) roundEl.style.display = 'none';
+              if (finishBtn) finishBtn.style.display = 'inline-block';
+              return;
+            }
+          }
+          sec = BREATHE_PHASES[phase].sec;
+          if (phaseEl) phaseEl.textContent = BREATHE_PHASES[phase].label;
+          if (subEl) subEl.textContent = BREATHE_PHASES[phase].detail;
+          if (roundEl) roundEl.textContent = 'Round ' + (round + 1) + ' of ' + BREATHE_ROUNDS;
+        }
+      }, 1000);
+    }
+    function finishBreathe() {
+      show('celebration');
+      drawCelebrationCactus();
+    }
+    function finishSquats() {
+      show('celebration');
+      drawCelebrationCactus();
+    }
+    function completeChallenge(id) {
+      show('countdown');
+      if (breatheTimer) {
+        clearInterval(breatheTimer);
+        breatheTimer = 0;
+      }
+      const introEl = document.getElementById('breatheIntro');
+      const readyBtn = document.getElementById('breatheReadyBtn');
+      const phaseEl = document.getElementById('breathePhase');
+      const numEl = document.getElementById('countdownNum');
+      const subEl = document.getElementById('breatheSublabel');
+      const roundEl = document.getElementById('breatheRound');
+      const finishBtn = document.getElementById('breatheFinishBtn');
+      if (introEl) introEl.style.display = 'none';
+      if (readyBtn) readyBtn.style.display = 'none';
+      if (phaseEl) phaseEl.style.display = 'block';
+      if (subEl) subEl.style.display = 'block';
+      if (phaseEl) phaseEl.textContent = 'Great job';
+      if (numEl) numEl.textContent = '';
+      if (subEl) subEl.textContent = 'Tap Finish when you are ready';
+      if (roundEl) roundEl.style.display = 'none';
+      if (finishBtn) finishBtn.style.display = 'inline-block';
+    }
+    function drawCelebrationCactus() {
+      const c = document.getElementById('celebrationCactus');
+      if (!c) return;
+      const cx = c.getContext('2d');
+      const top = '#C47B5B';
+      const body = '#6B8F71';
+      const dark = '#5A7A60';
+      const pot = '#B85C38';
+      cx.fillStyle = top;
+      cx.beginPath();
+      cx.ellipse(40, 12, 12, 10, 0, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = body;
+      cx.beginPath();
+      cx.ellipse(40, 38, 14, 20, 0, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = dark;
+      cx.beginPath();
+      cx.arc(36, 38, 5, 0, Math.PI * 2);
+      cx.arc(44, 38, 5, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = body;
+      cx.beginPath();
+      cx.ellipse(18, 42, 10, 8, -0.4, 0, Math.PI * 2);
+      cx.ellipse(62, 38, 10, 8, 0.4, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = pot;
+      cx.beginPath();
+      cx.ellipse(40, 60, 16, 10, 0, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = '#9A4A2E';
+      cx.fillRect(32, 64, 16, 6);
+    }
+    function drawPixelCactus(canvasId) {
+      const c = document.getElementById(canvasId);
+      if (!c) return;
+      const cx = c.getContext('2d');
+      const top = '#C47B5B';
+      const body = '#6B8F71';
+      const pot = '#B85C38';
+      const potDark = '#9A4A2E';
+      const eyeWhite = '#FFFFFF';
+      const pupil = '#4A453E';
+      const smile = '#4A453E';
+      cx.fillStyle = top;
+      cx.beginPath();
+      cx.ellipse(34, 10, 10, 8, 0, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = body;
+      cx.beginPath();
+      cx.ellipse(34, 32, 12, 18, 0, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = eyeWhite;
+      cx.beginPath();
+      cx.arc(28, 30, 6, 0, Math.PI * 2);
+      cx.arc(40, 30, 6, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = pupil;
+      cx.beginPath();
+      cx.arc(28, 30, 3.5, 0, Math.PI * 2);
+      cx.arc(40, 30, 3.5, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = eyeWhite;
+      cx.beginPath();
+      cx.arc(29, 28.5, 1.2, 0, Math.PI * 2);
+      cx.arc(41, 28.5, 1.2, 0, Math.PI * 2);
+      cx.fill();
+      cx.strokeStyle = smile;
+      cx.lineWidth = 1.5;
+      cx.beginPath();
+      cx.arc(34, 38, 6, 0.2 * Math.PI, 0.8 * Math.PI);
+      cx.stroke();
+      cx.fillStyle = pot;
+      cx.beginPath();
+      cx.ellipse(34, 50, 14, 8, 0, 0, Math.PI * 2);
+      cx.fill();
+      cx.fillStyle = potDark;
+      cx.fillRect(26, 52, 16, 4);
+    }
+    function drawRewardCactus() { drawPixelCactus('rewardCactus'); }
+    function drawHomeCactus() { drawPixelCactus('homeCactus'); }
+
+    // ——— App nav ———
+    let reelCount = 0;
+    try {
+      const saved = Number(localStorage.getItem('reelbreak:lastReelCount') || '0');
+      reelCount = Number.isFinite(saved) && saved >= 0 ? saved : 0;
+    } catch (_) {}
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      var el = document.getElementById(id);
+      if (el) el.classList.add('active');
+      if (id === 'home') drawHomeCactus();
+      if (id === 'mood') setupRainbow();
+      if (id === 'reward') drawRewardCactus();
+      if (id === 'reel') {
+        var reelNum = document.getElementById('reelNum');
+        if (reelNum) reelNum.textContent = reelCount;
+      }
+    }
+    drawHomeCactus();
+    function adjustReel(d) {
+      reelCount = Math.max(0, reelCount + d);
+      document.getElementById('reelNum').textContent = reelCount;
+      try { localStorage.setItem('reelbreak:lastReelCount', String(reelCount)); } catch (_) {}
+    }
+
+    let reelHoldTimer = 0;
+    function startAdjustReel(d) {
+      adjustReel(d);
+      stopAdjustReel();
+      reelHoldTimer = setInterval(function () { adjustReel(d); }, 120);
+    }
+    function stopAdjustReel() {
+      if (reelHoldTimer) {
+        clearInterval(reelHoldTimer);
+        reelHoldTimer = 0;
+      }
+    }
+
+  </script>
+</body>
+</html>
