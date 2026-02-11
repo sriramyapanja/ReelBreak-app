@@ -150,6 +150,26 @@ Then press:
 
 ---
 
+## App Screenshots
+
+Add your screenshots to `docs/images/` with these file names:
+
+- `home.png`
+- `mood-arch.png`
+- `breathe-ready.png`
+- `challenge-finish.png`
+
+Then they will render automatically in this README:
+
+<p align="center">
+  <img src="docs/images/home.png" width="220" alt="Home screen" />
+  <img src="docs/images/mood-arch.png" width="220" alt="Mood arch slider" />
+  <img src="docs/images/breathe-ready.png" width="220" alt="Breathing ready screen" />
+  <img src="docs/images/challenge-finish.png" width="220" alt="Challenge finish screen" />
+</p>
+
+---
+
 ## Research Positioning
 
 This project is framed as both:
