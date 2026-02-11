@@ -1,6 +1,6 @@
 # ReelBreak: Behavior Analysis App for Social Media Use
 
-ReelBreak is a mindfulness-centered behavior analysis app that helps users notice and interrupt automatic scrolling in real time.
+ReelBreak is a mindfulness-centered behavior analysis app that helps users notice and interrupt automatic scrolling in real time, transforming subconscious social media scrolling into moments of awareness, reflection, and gentle self-interruption.
 
 Core idea: **counting reels is not just logging - it is a micro-intervention**.
 
