@@ -4,8 +4,7 @@
 
 **Core idea: counting reels is not passive logging. It is a micro-intervention.**
 
-By introducing intentional friction at the moment of automatic scrolling, ReelBreak converts subconscious behavior into a conscious decision point — without shame, restriction, or cold-turkey abstinence.
-
+By introducing intentional friction at the moment of automatic scrolling, ReelBreak converts subconscious behavior into a conscious decision point.
 <p align="center">
   <img src="docs/images/home.png" width="220" alt="Home screen" />
   <img src="docs/images/mood-arch.png" width="220" alt="Mood arch slider" />
