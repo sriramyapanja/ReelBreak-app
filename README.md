@@ -1,6 +1,6 @@
 # ReelBreak
 
-> A real-time mindfulness intervention app for compulsive social media use — built with Expo + React Native.
+> A real-time mindfulness intervention app for compulsive social media use, built with Expo + React Native.
 
 **Core idea: counting reels is not passive logging. It is a micro-intervention.**
 
@@ -152,7 +152,7 @@ Home
 **Notable UX decisions:**
 - Hold-to-increment on reel counter prevents accidental taps from being tedious
 - Breathing uses a real timer (not animation-only) with round tracking
-- Mami never counts reels or judges the number — only celebrates showing up
+   
 
 ---
 
@@ -192,7 +192,7 @@ Challenges in the app map to addiction recovery coping synthesis (Setiawan et al
 ### Research Positioning
 
 This project operates as both:
-1. **Theory-building** — capturing process-level behavioral traces longitudinally
+1. **Theory-building** - capturing process-level behavioral traces longitudinally
 2. **Intervention-enabling** — real-time micro-actions that support self-regulation in the moment
 
 It is not only a tracker. It is a **behavioral design system** aimed at practical prevention and early intervention.
@@ -201,11 +201,11 @@ It is not only a tracker. It is a **behavioral design system** aimed at practica
 
 ## Roadmap
 
-- [ ] Backend event schema (trigger → state → action → outcome sequences)
-- [ ] Longitudinal analytics dashboard (pattern discovery, intervention efficacy)
-- [ ] Optional physiological context layer (time of day, prior activity)
-- [ ] Streak + habit-loop visualization
-- [ ] A/B test framework for coping alternatives
+-  Backend event schema (trigger → state → action → outcome sequences)
+-  Longitudinal analytics dashboard (pattern discovery, intervention efficacy)
+-  Optional physiological context layer (time of day, prior activity)
+-  Streak + habit-loop visualization
+-  A/B test framework for coping alternatives
 
 ---
 
